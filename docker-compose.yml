@@ -9,7 +9,7 @@ services:
       ACCEPT_EULA: "Y"
       MSSQL_PID: "Developer"
     ports:
-      - "1433:1433"
+      - "14333:1433"
     volumes:
       - sqldata:/var/opt/mssql
     healthcheck:
@@ -46,11 +46,13 @@ services:
       JWT__SecritKey: "${JWT_SECRET_KEY:-VendorHubSuperSecretKeyForJWTAuth2026!}"
       JWT__IssuerIP: "${JWT_ISSUER:-https://localhost:7081}"
       JWT__AudienceIP: "${JWT_AUDIENCE:-https://localhost:7081}"
+      SeedData__AdminEmail: "admin@gmail.com"
+      SeedData__AdminPassword: "${ADMIN_PASSWORD:-P@ssw0rd123!}"
       Serilog__WriteTo__2__Args__serverUrl: "http://seq:80"
     ports:
       - "7081:8080"
     volumes:
-      - api-images:/app/wwwroot/Images
+      - ./backend/wwwroot/Images:/app/wwwroot/Images
     depends_on:
       mssql:
         condition: service_healthy
@@ -91,8 +93,6 @@ services:
 
 volumes:
   sqldata:
-    driver: local
-  api-images:
     driver: local
   seqdata:
     driver: local

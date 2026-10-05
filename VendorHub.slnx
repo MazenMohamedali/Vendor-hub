@@ -1,6 +1,7 @@
 <Solution>
-  <Folder Name="/backend/">
-    <Project Path="backend/VendorHub.csproj" />
-  </Folder>
+  <Project Path="backend/VendorHub.API.csproj" />
+  <Project Path="VendorHub.Application/VendorHub.Application.csproj" Id="cfe399d2-a1be-48a7-90a5-6997b012e187" />
+  <Project Path="VendorHub.Domain/VendoerHub.Domain.csproj" />
+  <Project Path="VendorHub.Infrastructure/VendorHub.Infrastructure.csproj" Id="4ef55dde-f727-4d36-be04-d220aeedaa9e" />
   <Project Path="VendorHub.UnitTests/VendorHub.UnitTests.csproj" />
 </Solution>

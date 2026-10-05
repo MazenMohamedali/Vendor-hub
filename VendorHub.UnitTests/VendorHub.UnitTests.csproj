@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\backend\VendorHub.csproj" />
+    <ProjectReference Include="..\backend\VendorHub.API.csproj" />
   </ItemGroup>
 
   <ItemGroup>
