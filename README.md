@@ -1,98 +1,92 @@
-# Order Management System
+# VendorHub API 🛒
 
-A robust, scalable .NET API and background processing service designed to handle order lifecycles. Built with Clean Architecture and CQRS principles, this system ensures clear separation of concerns, high-performance asynchronous processing, and deep system observability.
+> 🚧 **WORK IN PROGRESS:** This project is currently in active development. The architecture has been initialized, and core features are actively being built.
 
-## 🚀 Features
+VendorHub is a robust, enterprise-grade multi-vendor e-commerce backend. It provides a scalable foundation for customers to browse and purchase products, vendors to manage their inventory and orders, and administrators to oversee the platform.
 
-- **Command Query Responsibility Segregation (CQRS):**
-  - `CreateOrderCommand`: Handles the creation and initial validation of new orders.
-  - `GetOrderByIdQuery`: Retrieves specific order details efficiently.
-  - `GetOrdersQuery`: Fetches a paginated/filtered list of all system orders.
-- **Asynchronous Background Processing:**
-  - Dedicated `OrderProcessingBackgroundService` to handle long-running order state transitions and background tasks without blocking the main API threads.
-- **Comprehensive Observability:**
-  - **Distributed Tracing:** Full request tracing across `Create Order`, `Get Order By ID`, and `Get Orders` operations.
-  - **Metrics Collection:** Real-time tracking of order volumes, processing queues, and background worker health.
-  - **Operational Alerts:** Configured thresholds for worker downtime and order processing failure rates.
+The system is built using **ASP.NET Core** and strictly adheres to **Clean Architecture** principles combined with **Vertical Slice Architecture** for feature encapsulation, CQRS pattern, and deep system observability.
 
-## 🛠 Tech Stack
+## 🚀 Technologies & Stack
 
-- **Framework:** .NET (C#)
-- **Architecture:** Clean Architecture, CQRS, Domain-Driven Design (DDD) principles
-- **Libraries & Tools:** MediatR, Entity Framework Core, OpenTelemetry
-- **Infrastructure:** SQL Server / PostgreSQL (Configurable), Docker, Redis (Caching)
+* **Framework:** .NET (C#) / ASP.NET Core Web API
+* **Architecture:** Clean Architecture, Vertical Slice Architecture, Domain-Driven Design (DDD), CQRS pattern
+* **Database:** Microsoft SQL Server
+* **ORM:** Entity Framework Core
+* **Caching:** Redis (Distributed Caching) & In-Memory Cache
+* **Authentication/Authorization:** ASP.NET Core Identity + JWT (JSON Web Tokens)
+* **Real-time:** SignalR (for live notifications and order updates)
+* **Observability:** OpenTelemetry, Prometheus, Grafana
+* **Containerization:** Docker & Docker Compose
 
-## 📂 Project Structure
+## 🏗 Architecture Overview
 
-```text
-├── src
-│   ├── OrderSystem.Api
-│   ├── OrderSystem.Application
-│   ├── OrderSystem.Domain
-│   ├── OrderSystem.Infrastructure
-│   └── OrderSystem.Worker
-```
+This project is structured into four main layers to separate concerns, enforce dependency rules, and ensure the core domain remains independent of external frameworks.
 
-- **`Api`**: REST endpoints, Middleware, and Dependency Injection setup.
-- **`Application`**: CQRS Handlers, DTOs, and Business Use Cases.
-- **`Domain`**: Core Entities (Order), Value Objects, and Domain Interfaces.
-- **`Infrastructure`**: EF Core DbContext, Repositories, and External Integrations.
-- **`Worker`**: BackgroundServices for asynchronous processing.
+    VendorHub/
+    ├── VendorHub.Domain/         # Enterprise logic, Entities, Value Objects, Domain Events
+    ├── VendorHub.Application/    # Business logic, CQRS Features (Vertical Slices), DTOs
+    ├── VendorHub.Infrastructure/ # External concerns: EF Core, SQL Server, Redis, Identity
+    └── VendorHub.Api/            # Entry point: Controllers, Middleware, Dependency Injection Setup
 
-## 📊 Observability & Monitoring
+### Vertical Slices
+Instead of organizing the `Application` layer strictly by technical concern, features are organized by **Vertical Slices** (e.g., `Features/Orders/CreateOrder`). This ensures that all components required for a single use case (Command, Handler, Validator) live together, making the system highly maintainable.
 
-This project is instrumented for deep operational visibility.
+## 🚧 Current Status & Roadmap
 
-**Active Traces:**
+- [x] Initialize Clean Architecture & Vertical Slices
+- [x] Setup Domain Entities, Value Objects, and Enums
+- [x] Configure Infrastructure (EF Core, SQL Server, Redis, Identity)
+- [x] Implement initial API Controllers (Auth, Orders, Products, Users)
+- [ ] Implement Background Worker & GetOrders query (Next Phase)
+- [ ] Add Monitoring & Observability suite (Metrics, Tracing, Health Checks)
+- [ ] Complete full CQRS handlers for all core features
+- [ ] Set up Grafana dashboard and alerting rules
+- [ ] Write Unit and Integration tests using xUnit & Moq
 
-- API Request Pipeline -> Command/Query Handler -> Database Transaction
-- Specific tracking spans for `CreateOrder`, `GetOrderById`, and `GetOrders`.
+## 📦 Core Modules
 
-**Key Metrics Tracked:**
+* **User Management:** Role-based access control supporting `Admin`, `Vendor`, and `Customer` profiles.
+* **Catalog Management:** Vendors can propose products; Admins review and approve them.
+* **Order Processing:** Secure cart management, checkout flows, and state-machine-driven order status transitions.
+* **Notifications:** Real-time system alerts using SignalR and Domain Events.
+* **Observability Suite:** Distributed tracing, metrics collection, and background worker monitoring.
 
-- Total orders created (Counter)
-- Active orders in processing queue (Gauge)
-- Background worker execution time and health status (Histogram/Status)
-
-## 🚦 Getting Started
+## 🛠️ Getting Started
 
 ### Prerequisites
-
-- [.NET SDK](https://dotnet.microsoft.com/download)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop)
+* [.NET SDK](https://dotnet.microsoft.com/download) (Version 8.0 or latest)
+* [Docker Desktop](https://www.docker.com/products/docker-desktop) (for running Redis and SQL Server locally)
 
 ### Local Development Setup
 
 1. **Clone the repository:**
 
-   ```bash
-   git clone <repository-url>
-   cd OrderSystem
-   ```
+        git clone git@github.com:MazenMohamedali/Vendor-hub.git
+        cd Vendor-hub
 
-2. **Spin up dependencies:**
-   Start the required databases and observability tools via Docker Compose.
+2. **Spin up dependencies via Docker Compose:**
 
-   ```bash
-   docker-compose up -d
-   ```
+        docker-compose up -d
 
 3. **Apply Database Migrations:**
 
-   ```bash
-   dotnet ef database update \
-     --project src/OrderSystem.Infrastructure \
-     --startup-project src/OrderSystem.Api
-   ```
+        cd VendorHub.Api
+        dotnet ef database update --project ../VendorHub.Infrastructure
 
-4. **Run the Application:**
-   ```bash
-   dotnet run --project src/OrderSystem.Api
-   ```
+4. **Run the API:**
 
-## 📝 Next Steps (Development Phase)
+        dotnet run
 
-- [ ] Implement `Order` Domain Entity and `IOrderRepository`.
-- [ ] Complete MediatR Handlers for `GetOrders` query.
-- [ ] Integrate `OrderProcessingBackgroundService`.
-- [ ] Instrument code with OpenTelemetry for the Observability phase.
+5. **Explore the Endpoints:**
+   Open your browser and navigate to `https://localhost:<port>/swagger`.
+
+## 🤝 Contributing
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes using Conventional Commits
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 👤 Author
+**Mazen Mohamed**
+* GitHub: [@MazenMohamedali](https://github.com/MazenMohamedali)
