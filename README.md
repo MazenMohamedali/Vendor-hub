@@ -92,3 +92,4 @@ The solution is partitioned into four decoupled layers:
 ## 👤 Author
 **Mazen Mohamed**
 * GitHub: [@MazenMohamedali](https://github.com/MazenMohamedali)
+* LinkedIn: [Mazen Mohamed](https://www.linkedin.com/in/mazen-mohamed-100ab92a9/)
