@@ -1,91 +1,93 @@
 # VendorHub API 🛒
 
-> 🚧 **WORK IN PROGRESS:** This project is currently in active development. The architecture has been initialized, and core features are actively being built.
+> 🚧 **WORK IN PROGRESS:** This project is currently in active development. The core Clean Architecture MVP, authentication, order workflows, and background workers are fully functional and compiling.
 
 VendorHub is a robust, enterprise-grade multi-vendor e-commerce backend. It provides a scalable foundation for customers to browse and purchase products, vendors to manage their inventory and orders, and administrators to oversee the platform.
 
-The system is built using **ASP.NET Core** and strictly adheres to **Clean Architecture** principles combined with **Vertical Slice Architecture** for feature encapsulation, CQRS pattern, and deep system observability.
+The system is built using **ASP.NET Core (.NET 10)** and strictly adheres to **Clean Architecture** principles combined with **Vertical Slice Architecture** for feature encapsulation, CQRS pattern, and deep system observability.
 
 ## 🚀 Technologies & Stack
 
-* **Framework:** .NET (C#) / ASP.NET Core Web API
-* **Architecture:** Clean Architecture, Vertical Slice Architecture, Domain-Driven Design (DDD), CQRS pattern
+* **Framework:** .NET 10 / ASP.NET Core Web API
+* **Architecture:** Clean Architecture, Vertical Slice Architecture, Domain-Driven Design (DDD), CQRS
 * **Database:** Microsoft SQL Server
-* **ORM:** Entity Framework Core
-* **Caching:** Redis (Distributed Caching) & In-Memory Cache
-* **Authentication/Authorization:** ASP.NET Core Identity + JWT (JSON Web Tokens)
-* **Real-time:** SignalR (for live notifications and order updates)
-* **Observability:** OpenTelemetry, Prometheus, Grafana
+* **ORM:** Entity Framework Core (Code-First)
+* **Caching:** Redis (Distributed Caching & Cache-Aside)
+* **Authentication & Authorization:** ASP.NET Core Identity + JWT (Bearer Tokens)
+* **Background Jobs:** .NET Hosted Background Services (`PeriodicTimer`)
+* **Observability (In Progress):** Serilog, OpenTelemetry, Prometheus, Grafana, ASP.NET Core Health Checks
 * **Containerization:** Docker & Docker Compose
 
 ## 🏗 Architecture Overview
 
-This project is structured into four main layers to separate concerns, enforce dependency rules, and ensure the core domain remains independent of external frameworks.
+The solution is partitioned into four decoupled layers:
 
     VendorHub/
-    ├── VendorHub.Domain/         # Enterprise logic, Entities, Value Objects, Domain Events
-    ├── VendorHub.Application/    # Business logic, CQRS Features (Vertical Slices), DTOs
-    ├── VendorHub.Infrastructure/ # External concerns: EF Core, SQL Server, Redis, Identity
-    └── VendorHub.Api/            # Entry point: Controllers, Middleware, Dependency Injection Setup
+    ├── VendorHub.Domain/         # Enterprise logic, Entities, Value Objects, Domain Events, Domain Services
+    ├── VendorHub.Application/    # Use cases, CQRS Slices, Validation Pipeline, DTOs
+    ├── VendorHub.Infrastructure/ # EF Core, SQL Server, Redis Cache, ASP.NET Core Identity, Hosted Services
+    └── VendorHub.Api/            # Entry point: Controllers, Filters, Middleware, OpenAPI / Swagger
 
-### Vertical Slices
-Instead of organizing the `Application` layer strictly by technical concern, features are organized by **Vertical Slices** (e.g., `Features/Orders/CreateOrder`). This ensures that all components required for a single use case (Command, Handler, Validator) live together, making the system highly maintainable.
+### Key Architectural Highlights
+* **Domain Service (`OrderFulfillmentService`):** Encapsulates cross-aggregate stock verification and deduction between `Order` and `Product` without leaking database logic into entities.
+* **Generic Pagination Engine:** Reusable `PagedList<T>` container and EF Core `ToPagedListAsync()` queryable extension.
+* **Resilient Background Worker:** `OrderProcessingBackgroundService` runs every 15 seconds using `PeriodicTimer`, creates isolated DI scopes per cycle, and fulfills pending orders via batch commits.
+* **Cache-Aside Pattern:** Redis-backed order and product caching with hit/miss telemetry.
 
 ## 🚧 Current Status & Roadmap
 
-- [x] Initialize Clean Architecture & Vertical Slices
-- [x] Setup Domain Entities, Value Objects, and Enums
-- [x] Configure Infrastructure (EF Core, SQL Server, Redis, Identity)
-- [x] Implement initial API Controllers (Auth, Orders, Products, Users)
-- [ ] Implement Background Worker & GetOrders query (Next Phase)
-- [ ] Add Monitoring & Observability suite (Metrics, Tracing, Health Checks)
-- [ ] Complete full CQRS handlers for all core features
-- [ ] Set up Grafana dashboard and alerting rules
-- [ ] Write Unit and Integration tests using xUnit & Moq
+- [x] Clean Architecture & CQRS Pipeline initialization
+- [x] Pure Guid Domain Entities, Value Objects, and Domain Events
+- [x] SQL Server Database Migration (`VendorHub_CleanDb`) & EF Core Configurations
+- [x] Decoupled ASP.NET Core Identity & JWT Provider (`Login`, `RegisterCustomer`, `RegisterVendor`)
+- [x] Core CQRS Slices (`CreateProduct`, `ApproveProduct`, `CreateOrder`, `GetOrderById`, `CancelOrder`)
+- [x] Generic Pagination (`PagedList<T>`, `ToPagedListAsync`) & `GetOrders` Query
+- [x] Domain Service (`OrderFulfillmentService`) for stock deduction
+- [x] Production-ready Background Worker (`OrderProcessingBackgroundService`)
+- [ ] **Phase 1:** Health Checks endpoint (`/health` for API, SQL Server, Redis)
+- [ ] **Phase 2:** Structured Logging (Serilog + Seq integration)
+- [ ] **Phase 3:** Application Metrics (.NET Meter & Prometheus `/metrics`)
+- [ ] **Phase 4:** Distributed Tracing (`ActivitySource` & OpenTelemetry)
+- [ ] **Phase 5:** Grafana Dashboard (5 panels) & Alerting Rules
 
 ## 📦 Core Modules
 
 * **User Management:** Role-based access control supporting `Admin`, `Vendor`, and `Customer` profiles.
-* **Catalog Management:** Vendors can propose products; Admins review and approve them.
-* **Order Processing:** Secure cart management, checkout flows, and state-machine-driven order status transitions.
-* **Notifications:** Real-time system alerts using SignalR and Domain Events.
-* **Observability Suite:** Distributed tracing, metrics collection, and background worker monitoring.
+* **Catalog Management:** Vendors propose products; Admins review and approve them.
+* **Order Processing:** State-machine-driven status transitions (`Pending` ➔ `Processing` ➔ `PartiallyShipped` / `Shipped` / `Failed`).
+* **Inventory Management:** Automatic stock deduction during order fulfillment with out-of-stock event triggers.
+* **Observability Suite:** Traces for Order creation and queries, request latency tracking, and pending-order gauges.
 
 ## 🛠️ Getting Started
 
 ### Prerequisites
-* [.NET SDK](https://dotnet.microsoft.com/download) (Version 8.0 or latest)
-* [Docker Desktop](https://www.docker.com/products/docker-desktop) (for running Redis and SQL Server locally)
+* [.NET SDK](https://dotnet.microsoft.com/download) (Version 10.0 or 8.0+)
+* SQL Server & Redis (Local instances or Docker containers)
 
 ### Local Development Setup
 
 1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/MazenMohamedali/Vendor-hub.git
+   cd Vendor-hub
+   ```
 
-        git clone git@github.com:MazenMohamedali/Vendor-hub.git
-        cd Vendor-hub
+2. **Configure Connection Strings:**
+   Verify `appsettings.json` in `VendorHub.Api`:
+   ```json
+   "ConnectionStrings": {
+     "sqlServerCs": "Data Source=.; Initial Catalog=VendorHub_CleanDb; Integrated Security=True; Encrypt=False;",
+     "RedisConnection": "localhost:6379"
+   }
+   ```
 
-2. **Spin up dependencies via Docker Compose:**
+3. **Run the API:**
+   ```bash
+   dotnet run --project VendorHub.Api
+   ```
 
-        docker-compose up -d
-
-3. **Apply Database Migrations:**
-
-        cd VendorHub.Api
-        dotnet ef database update --project ../VendorHub.Infrastructure
-
-4. **Run the API:**
-
-        dotnet run
-
-5. **Explore the Endpoints:**
+4. **Explore the Endpoints:**
    Open your browser and navigate to `https://localhost:<port>/swagger`.
-
-## 🤝 Contributing
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes using Conventional Commits
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ## 👤 Author
 **Mazen Mohamed**
