@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using VendorHub.Application.Common.Interfaces;
 using VendorHub.Domain.Repositories;
+using VendorHub.Domain.Services;
 using VendorHub.Infrastructure.Authentication;
+using VendorHub.Infrastructure.BackGroundJobs;
 using VendorHub.Infrastructure.Identity;
 using VendorHub.Infrastructure.Persistence;
 using VendorHub.Infrastructure.Persistence.Repositories;
@@ -52,6 +54,12 @@ namespace VendorHub.Infrastructure
             });
 
             services.AddSingleton<ICacheService, RedisCacheService>();
+
+            // Domain Services
+            services.AddScoped<OrderFulfillmentService>();
+
+            // Background Hosted Services
+            services.AddHostedService<OrderProcessingBackgroundService>();
 
             return services;
         }

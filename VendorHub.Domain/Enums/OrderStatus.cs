@@ -7,5 +7,6 @@ public enum OrderStatus
     PartiallyShipped = 2,
     Shipped = 3,
     Delivered = 4,
-    Cancelled = 5
+    Cancelled = 5, 
+    Failed = 6
 }

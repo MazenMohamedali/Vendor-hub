@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using VendorHub.Controllers.Common;
 using VendorHub.Application.Features.Orders.CreateOrder;
 using VendorHub.Application.Features.Orders.GetOrderById;
+using VendorHub.Application.Features.Orders.GetOrders;
 using VendorHub.Application.Features.Orders.CancelOrder;
 
 public class OrdersController : BaseApiController
@@ -16,6 +17,13 @@ public class OrdersController : BaseApiController
             return HandleResult(result);
 
         return CreatedAtAction(nameof(GetOrderById), new { id = result.Value }, result.Value);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetOrders([FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default)
+    {
+        var result = await Sender.Send(new GetOrdersQuery(page, pageSize), cancellationToken);
+        return HandleResult(result);
     }
 
     [HttpGet("{id:guid}")]
